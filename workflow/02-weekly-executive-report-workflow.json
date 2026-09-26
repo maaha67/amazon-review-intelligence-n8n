@@ -1,0 +1,625 @@
+{
+  "name": "ARI-02 | Weekly Amazon Review Intelligence Report",
+  "nodes": [
+    {
+      "parameters": {
+        "sendTo": "alerts@example.com",
+        "subject": "=Amazon Review Intelligence Report — {{ $json.total_reviews_analyzed }} Reviews Analyzed",
+        "message": "={{ `\n<div style=\"margin:0;padding:32px;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#15233b;\">\n\n  <div style=\"max-width:760px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e5eaf1;\">\n\n    <div style=\"background:#0b1f3a;padding:34px 38px;\">\n      <div style=\"font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#ff9b54;margin-bottom:10px;\">\n        Amazon Review Intelligence\n      </div>\n\n      <div style=\"font-size:28px;line-height:1.25;font-weight:700;color:#ffffff;\">\n        ${$(\"05 — Prepare Weekly Report Record\").item.json.report_title}\n      </div>\n\n      <div style=\"margin-top:12px;font-size:14px;color:#b9c6d8;\">\n        Generated ${$(\"05 — Prepare Weekly Report Record\").item.json.report_generated_at}\n      </div>\n    </div>\n\n    <div style=\"padding:30px 38px;\">\n\n      <div style=\"display:flex;gap:12px;margin-bottom:28px;\">\n\n        <div style=\"width:33%;padding:18px;background:#f5f8fc;border-radius:12px;\">\n          <div style=\"font-size:12px;color:#65758b;\">Reviews</div>\n          <div style=\"font-size:25px;font-weight:700;color:#0b1f3a;margin-top:6px;\">\n            ${$(\"05 — Prepare Weekly Report Record\").item.json.total_reviews_analyzed}\n          </div>\n        </div>\n\n        <div style=\"width:33%;padding:18px;background:#f5f8fc;border-radius:12px;\">\n          <div style=\"font-size:12px;color:#65758b;\">Average Rating</div>\n          <div style=\"font-size:25px;font-weight:700;color:#0b1f3a;margin-top:6px;\">\n            ${$(\"05 — Prepare Weekly Report Record\").item.json.average_rating}/5\n          </div>\n        </div>\n\n        <div style=\"width:33%;padding:18px;background:#fff4ec;border-radius:12px;\">\n          <div style=\"font-size:12px;color:#8a5a38;\">Priority Score</div>\n          <div style=\"font-size:25px;font-weight:700;color:#e96f1d;margin-top:6px;\">\n            ${$(\"05 — Prepare Weekly Report Record\").item.json.average_priority_score}\n          </div>\n        </div>\n\n      </div>\n\n      <div style=\"margin-bottom:26px;\">\n        <div style=\"font-size:17px;font-weight:700;margin-bottom:8px;\">Executive Summary</div>\n        <div style=\"font-size:15px;line-height:1.7;color:#46566c;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.executive_summary}\n        </div>\n      </div>\n\n      <div style=\"margin-bottom:26px;\">\n        <div style=\"font-size:17px;font-weight:700;margin-bottom:8px;\">Customer Sentiment</div>\n        <div style=\"font-size:15px;line-height:1.7;color:#46566c;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.customer_sentiment_overview}\n        </div>\n      </div>\n\n      <div style=\"padding:20px;background:#fff1f1;border-left:4px solid #d64045;border-radius:10px;margin-bottom:26px;\">\n        <div style=\"font-size:14px;font-weight:700;color:#a6292e;margin-bottom:7px;\">Top Customer Risk</div>\n        <div style=\"font-size:15px;line-height:1.6;color:#65373a;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.top_customer_risk}\n        </div>\n      </div>\n\n      <div style=\"padding:20px;background:#eef9f2;border-left:4px solid #2a9d5b;border-radius:10px;margin-bottom:28px;\">\n        <div style=\"font-size:14px;font-weight:700;color:#207544;margin-bottom:7px;\">Strongest Positive Signal</div>\n        <div style=\"font-size:15px;line-height:1.6;color:#365e46;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.strongest_positive_signal}\n        </div>\n      </div>\n\n      <div style=\"font-size:18px;font-weight:700;margin-bottom:15px;\">Recommended Actions</div>\n\n      <div style=\"margin-bottom:17px;\">\n        <div style=\"font-size:13px;font-weight:700;color:#e96f1d;margin-bottom:5px;\">PRODUCT</div>\n        <div style=\"font-size:15px;line-height:1.6;color:#46566c;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.product_recommendation}\n        </div>\n      </div>\n\n      <div style=\"margin-bottom:17px;\">\n        <div style=\"font-size:13px;font-weight:700;color:#e96f1d;margin-bottom:5px;\">LISTING & A+ CONTENT</div>\n        <div style=\"font-size:15px;line-height:1.6;color:#46566c;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.listing_recommendation}\n        </div>\n      </div>\n\n      <div style=\"margin-bottom:28px;\">\n        <div style=\"font-size:13px;font-weight:700;color:#e96f1d;margin-bottom:5px;\">CREATIVE TESTING</div>\n        <div style=\"font-size:15px;line-height:1.6;color:#46566c;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.creative_recommendation}\n        </div>\n      </div>\n\n      <div style=\"padding:22px;background:#0b1f3a;border-radius:12px;margin-bottom:26px;\">\n        <div style=\"font-size:12px;letter-spacing:1px;color:#ff9b54;margin-bottom:8px;\">PRIORITY FOR THE NEXT 7 DAYS</div>\n        <div style=\"font-size:17px;line-height:1.5;font-weight:600;color:#ffffff;\">\n          ${$(\"05 — Prepare Weekly Report Record\").item.json.priority_action_next_7_days}\n        </div>\n      </div>\n\n      <div style=\"font-size:14px;line-height:1.6;color:#65758b;\">\n        <strong>Management note:</strong>\n        ${$(\"05 — Prepare Weekly Report Record\").item.json.management_note}\n      </div>\n\n    </div>\n\n    <div style=\"padding:18px 38px;background:#f5f8fc;font-size:12px;color:#7a889b;\">\n      Automatically generated by the Amazon Review Intelligence System.\n      Recommendations should be validated by the responsible business and compliance teams.\n    </div>\n\n  </div>\n</div>\n` }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        320
+      ],
+      "id": "4f556228-4117-4f36-989a-1857a6989d21",
+      "name": "07 — Email Weekly Executive Report",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Sends branded HTML report to the decision-maker"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16b85be8-504c-47e6-9c0e-72f79cc1de78",
+              "name": "report_generated_at",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.report_generated_at }}",
+              "type": "string"
+            },
+            {
+              "id": "5daad0d7-57f8-411f-82e7-e6d8fc6eb62b",
+              "name": "total_reviews_analyzed",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.total_reviews_analyzed }}",
+              "type": "number"
+            },
+            {
+              "id": "f2d0271e-928f-4b80-ae75-20c84503d970",
+              "name": "average_rating",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.average_rating }}",
+              "type": "number"
+            },
+            {
+              "id": "239ac16b-1169-4652-9075-9c4c84a1e442",
+              "name": "average_sentiment_score",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.average_sentiment_score }}",
+              "type": "number"
+            },
+            {
+              "id": "24c71122-4854-4402-88bc-e14d116ec0ae",
+              "name": "average_priority_score",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.average_priority_score }}",
+              "type": "number"
+            },
+            {
+              "id": "b9c76b67-3c5e-44c1-9787-668b3be51efa",
+              "name": "report_title",
+              "value": "={{ $json.output.report_title }}",
+              "type": "string"
+            },
+            {
+              "id": "7af36f84-2fe1-49c5-a5b3-c50db02ea5ae",
+              "name": "executive_summary",
+              "value": "={{ $json.output.executive_summary }}",
+              "type": "string"
+            },
+            {
+              "id": "7131f45f-95f4-4890-93cf-aa2fa85c7c68",
+              "name": "customer_sentiment_overview",
+              "value": "={{ $json.output.customer_sentiment_overview }}",
+              "type": "string"
+            },
+            {
+              "id": "c5bdca23-413b-4dd7-bb87-38ed8945cf56",
+              "name": "top_customer_risk",
+              "value": "={{ $json.output.top_customer_risk }}",
+              "type": "string"
+            },
+            {
+              "id": "3977ecd6-500c-42fe-8fa3-4cef846e0eae",
+              "name": "product_recommendation",
+              "value": "={{ $json.output.product_recommendation }}",
+              "type": "string"
+            },
+            {
+              "id": "dc2d3f91-9402-4152-9946-5e44f2d1d9c6",
+              "name": "listing_recommendation",
+              "value": "={{ $json.output.listing_recommendation }}",
+              "type": "string"
+            },
+            {
+              "id": "fa98f544-5367-4459-857b-8d292fb1b885",
+              "name": "creative_recommendation",
+              "value": "={{ $json.output.creative_recommendation }}",
+              "type": "string"
+            },
+            {
+              "id": "6109bbb4-74e6-412b-8fc2-62b7f5e23d8d",
+              "name": "priority_action_next_7_days",
+              "value": "={{ $json.output.priority_action_next_7_days }}",
+              "type": "string"
+            },
+            {
+              "id": "5b733f4d-fa9e-4907-91d7-bebc2e23ff88",
+              "name": "management_note",
+              "value": "={{ $json.output.management_note }}",
+              "type": "string"
+            },
+            {
+              "id": "6f312f7a-273e-4a07-b5b7-cd70f95c54c1",
+              "name": "strongest_positive_signal",
+              "value": "={{ $json.output.strongest_positive_signal }}",
+              "type": "string"
+            },
+            {
+              "id": "d754f782-295e-49cb-805e-a8af1b99c422",
+              "name": "report_id",
+              "value": "={{ $(\"03 — Prepare Executive Report Data\").item.json.report_generated_at.slice(0, 10) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        320
+      ],
+      "id": "7dade794-a5fe-4c29-b120-48edd52af4ee",
+      "name": "05 — Prepare Weekly Report Record",
+      "notesInFlow": true,
+      "notes": "Creates a flat, storage-ready report object"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-5.6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        528
+      ],
+      "id": "3c740441-7e30-43d9-a2a8-aafdf5dc3671",
+      "name": "AI Model — Executive Reporting"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"report_title\": \"Weekly Amazon Review Intelligence Report\",\n  \"executive_summary\": \"Customer feedback is generally positive, although packaging-related concerns require attention.\",\n  \"customer_sentiment_overview\": \"Positive reviews emphasize product effectiveness while negative feedback focuses on packaging and listing clarity.\",\n  \"top_customer_risk\": \"Damaged or improperly sealed packaging is the most significant customer risk.\",\n  \"strongest_positive_signal\": \"Customers frequently report satisfaction with the product experience.\",\n  \"product_recommendation\": \"Review packaging quality-control procedures and seal integrity.\",\n  \"listing_recommendation\": \"Clarify dosage instructions and product-use expectations in the listing and A+ Content.\",\n  \"creative_recommendation\": \"Test customer-led creative focusing on ease of use, subject to compliance review.\",\n  \"priority_action_next_7_days\": \"Investigate the highest-priority packaging complaints and assign an owner.\",\n  \"management_note\": \"Continue monitoring packaging, customer expectations, and listing clarity.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        528
+      ],
+      "id": "a1c39442-e77d-46f3-a66f-19f87765dfdc",
+      "name": "AI Output — Executive Report Schema"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior Voice of Customer and e-commerce intelligence analyst.\n\nCreate a concise weekly executive report for an Amazon brand manager using the structured review intelligence supplied below.\n\nREVIEW INTELLIGENCE DATA\n\n{{ JSON.stringify($json, null, 2) }}\n\nREPORT REQUIREMENTS\n\n1. Explain the overall customer sentiment in plain business language.\n2. Identify the most important customer risk.\n3. Identify the strongest positive customer signal.\n4. Recommend one product or packaging action.\n5. Recommend one Amazon listing or A+ Content improvement.\n6. Recommend one advertising or creative-testing opportunity.\n7. State the single most important action for the next seven days.\n8. End with a short management note explaining what should continue to be monitored.\n\nIMPORTANT RULES\n\n- Use only the supplied review intelligence.\n- Do not invent sales, conversion, revenue, return-rate or performance data.\n- Do not treat one review as a proven market-wide trend.\n- Prioritize themes supported by multiple reviews when possible.\n- Clearly distinguish customer-reported feedback from verified product facts.\n- Do not turn supplement or health feedback into an approved medical claim.\n- Any health-related creative recommendation must require legal or compliance review.\n- Keep every recommendation practical and specific.\n- Do not mention that you are an AI.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        80,
+        320
+      ],
+      "id": "ed4bb653-67f5-4fdc-9336-b061cf7e9502",
+      "name": "04 — Write Weekly Executive Report",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Evidence-based management report with compliance guardrails"
+    },
+    {
+      "parameters": {
+        "jsCode": "const reviews = $input\n  .all()\n  .map((item) => item.json)\n  .filter((review) => review.review_id);\n\nfunction text(value) {\n  return String(value || \"\").trim().toLowerCase();\n}\n\nfunction number(value) {\n  const converted = Number(value);\n  return Number.isFinite(converted) ? converted : 0;\n}\n\nfunction boolean(value) {\n  return value === true || text(value) === \"true\";\n}\n\nfunction average(fieldName) {\n  if (reviews.length === 0) {\n    return 0;\n  }\n\n  const total = reviews.reduce(\n    (sum, review) => sum + number(review[fieldName]),\n    0\n  );\n\n  return Number((total / reviews.length).toFixed(2));\n}\n\nfunction count(fieldName, expectedValue) {\n  return reviews.filter(\n    (review) =>\n      text(review[fieldName]) === text(expectedValue)\n  ).length;\n}\n\nconst themeCounts = {};\n\nfor (const review of reviews) {\n  const theme = text(review.primary_theme) || \"unclassified\";\n\n  themeCounts[theme] = (themeCounts[theme] || 0) + 1;\n}\n\nconst topThemes = Object.entries(themeCounts)\n  .sort((first, second) => second[1] - first[1])\n  .slice(0, 5)\n  .map(([theme, total]) => ({\n    theme,\n    total,\n  }));\n\nconst urgentReviews = reviews\n  .filter(\n    (review) =>\n      text(review.priority_level) === \"critical\" ||\n      text(review.priority_level) === \"high\"\n  )\n  .sort(\n    (first, second) =>\n      number(second.priority_score) -\n      number(first.priority_score)\n  )\n  .slice(0, 5)\n  .map((review) => ({\n    review_id: review.review_id,\n    product_name: review.product_name,\n    rating: number(review.rating),\n    priority_level: review.priority_level,\n    priority_score: number(review.priority_score),\n    primary_theme: review.primary_theme,\n    customer_issue: review.customer_issue,\n    recommended_action: review.recommended_action,\n  }));\n\nconst positiveSignals = reviews\n  .filter(\n    (review) =>\n      text(review.positive_signal) !== \"none\" &&\n      text(review.positive_signal) !== \"\"\n  )\n  .slice(0, 5)\n  .map((review) => ({\n    review_id: review.review_id,\n    theme: review.primary_theme,\n    positive_signal: review.positive_signal,\n  }));\n\nconst reportData = {\n  report_generated_at: new Date().toISOString(),\n\n  total_reviews_analyzed: reviews.length,\n\n  sentiment_breakdown: {\n    positive: count(\"sentiment\", \"positive\"),\n    negative: count(\"sentiment\", \"negative\"),\n    mixed: count(\"sentiment\", \"mixed\"),\n    neutral: count(\"sentiment\", \"neutral\"),\n  },\n\n  priority_breakdown: {\n    critical: count(\"priority_level\", \"critical\"),\n    high: count(\"priority_level\", \"high\"),\n    medium: count(\"priority_level\", \"medium\"),\n    low: count(\"priority_level\", \"low\"),\n  },\n\n  average_rating: average(\"rating\"),\n  average_sentiment_score: average(\"sentiment_score\"),\n  average_priority_score: average(\"priority_score\"),\n\n  listing_opportunities: reviews.filter(\n    (review) => boolean(review.listing_opportunity)\n  ).length,\n\n  creative_opportunities: reviews.filter(\n    (review) => boolean(review.creative_opportunity)\n  ).length,\n\n  alert_worthy_reviews: reviews.filter(\n    (review) => boolean(review.requires_alert)\n  ).length,\n\n  top_themes: topThemes,\n  urgent_reviews: urgentReviews,\n  positive_signals: positiveSignals,\n};\n\nreturn [\n  {\n    json: reportData,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        320
+      ],
+      "id": "c2cac22f-2a05-4ccc-a626-d1a3005e2113",
+      "name": "03 — Prepare Executive Report Data",
+      "notesInFlow": true,
+      "notes": "Aggregates themes, risks, sentiment and opportunities"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Review_Analysis",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -368,
+        320
+      ],
+      "id": "723b043e-9586-4e7b-a517-47c767c3d487",
+      "name": "02 — Load Review Intelligence",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "executeOnce": true,
+      "notes": "Loads structured results from Review_Analysis"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -592,
+        320
+      ],
+      "id": "45e78f68-c9c8-4d56-8788-ac1d1af250fd",
+      "name": "01 — Start Report Manually"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Weekly_Reports",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "report_generated_at": "={{ $json.report_generated_at }}",
+            "total_reviews_analyzed": "={{ $json.total_reviews_analyzed }}",
+            "average_rating": "={{ $json.average_rating }}",
+            "average_sentiment_score": "={{ $json.average_sentiment_score }}",
+            "average_priority_score": "={{ $json.average_priority_score }}",
+            "report_title": "={{ $json.report_title }}",
+            "executive_summary": "={{ $json.executive_summary }}",
+            "customer_sentiment_overview": "={{ $json.customer_sentiment_overview }}",
+            "top_customer_risk": "={{ $json.top_customer_risk }}",
+            "strongest_positive_signal": "={{ $json.strongest_positive_signal }}",
+            "product_recommendation": "={{ $json.product_recommendation }}",
+            "listing_recommendation": "={{ $json.listing_recommendation }}",
+            "creative_recommendation": "={{ $json.creative_recommendation }}",
+            "priority_action_next_7_days": "={{ $json.priority_action_next_7_days }}",
+            "management_note": "={{ $json.management_note }}",
+            "report_id": "={{ $json.report_id }}"
+          },
+          "matchingColumns": [
+            "report_id"
+          ],
+          "schema": [
+            {
+              "id": "report_id",
+              "displayName": "report_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "report_generated_at",
+              "displayName": "report_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_reviews_analyzed",
+              "displayName": "total_reviews_analyzed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "average_rating",
+              "displayName": "average_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "average_sentiment_score",
+              "displayName": "average_sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "average_priority_score",
+              "displayName": "average_priority_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "report_title",
+              "displayName": "report_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "executive_summary",
+              "displayName": "executive_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "customer_sentiment_overview",
+              "displayName": "customer_sentiment_overview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "top_customer_risk",
+              "displayName": "top_customer_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "strongest_positive_signal",
+              "displayName": "strongest_positive_signal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_recommendation",
+              "displayName": "product_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "listing_recommendation",
+              "displayName": "listing_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "creative_recommendation",
+              "displayName": "creative_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority_action_next_7_days",
+              "displayName": "priority_action_next_7_days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "management_note",
+              "displayName": "management_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        320
+      ],
+      "id": "67b38921-5ba5-4088-bb02-1ab1c8afd068",
+      "name": "06 — Save Weekly Report",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Upsert using report_id"
+    },
+    {
+      "parameters": {
+        "content": "## 1. REPORT TRIGGERS\n\nA Manual Trigger remains available for controlled testing.",
+        "width": 288,
+        "color": "#CE9CB2"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "ebe23e98-8393-428d-9007-7eced65dc873",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 2. REVIEW INTELLIGENCE PREPARATION\n\nLoads all structured review analysis and calculates sentiment,\npriority, ratings, alert volume, top themes and urgent-review evidence.",
+        "width": 320,
+        "color": "#C399D6"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -352,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "a7fb4af9-2b5a-4fd9-99b9-ac4326fe42f5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 3. AI EXECUTIVE REPORTING\n\nTransforms structured Voice of Customer data into concise,\nevidence-based recommendations for product, listing and creative teams.\n\nStructured output keeps every weekly report consistent.",
+        "width": 320,
+        "color": "#A29BD9"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "a42e5c64-9824-414f-ba71-df3e409e03be",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 4. REPORT DELIVERY\n\nCreates a clean report record, upserts it using report_id,\nand sends a branded HTML executive email.\n\nSame-day reruns update the saved report instead of duplicating it.",
+        "width": 320,
+        "color": "#84B6DB"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "1d44bfec-6f95-4c0d-977c-9a6b394c0711",
+      "name": "Sticky Note3"
+    }
+  ],
+  "connections": {
+    "05 — Prepare Weekly Report Record": {
+      "main": [
+        [
+          {
+            "node": "06 — Save Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 — Write Weekly Executive Report": {
+      "main": [
+        [
+          {
+            "node": "05 — Prepare Weekly Report Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output — Executive Report Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "04 — Write Weekly Executive Report",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Model — Executive Reporting": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "04 — Write Weekly Executive Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 — Prepare Executive Report Data": {
+      "main": [
+        [
+          {
+            "node": "04 — Write Weekly Executive Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 — Load Review Intelligence": {
+      "main": [
+        [
+          {
+            "node": "03 — Prepare Executive Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "01 — Start Report Manually": {
+      "main": [
+        [
+          {
+            "node": "02 — Load Review Intelligence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 — Save Weekly Report": {
+      "main": [
+        [
+          {
+            "node": "07 — Email Weekly Executive Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
