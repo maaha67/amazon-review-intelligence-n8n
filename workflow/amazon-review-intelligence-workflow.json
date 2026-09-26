@@ -1,0 +1,1430 @@
+{
+  "name": "ARI-01 | Review Intelligence Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8fb4860b-4743-41c2-9963-b50b0c5121df",
+              "name": "rating",
+              "value": "={{ Number($json.rating) }}",
+              "type": "string"
+            },
+            {
+              "id": "70394fd0-cad9-409d-a2cf-09b6a290fca2",
+              "name": "helpful_votes",
+              "value": "={{ $json.helpful_votes }}",
+              "type": "number"
+            },
+            {
+              "id": "b9068148-e5ff-497b-9bf5-a17aa2eb13aa",
+              "name": "verified_purchase",
+              "value": "={{ $json.verified_purchase }}",
+              "type": "string"
+            },
+            {
+              "id": "8c221f95-b18f-4a32-ad8b-7f9dcfd4a3a8",
+              "name": "review_text",
+              "value": "={{ $json.review_text }}",
+              "type": "string"
+            },
+            {
+              "id": "007ab49f-66d0-4c91-b79c-23da9dd9df02",
+              "name": "processing_status",
+              "value": "={{ String($json.processing_status || 'NEW').trim().toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "2106acca-e6c3-49ca-b0cc-a5fe53cc16cb",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -208
+      ],
+      "id": "b199f900-c4a1-4d22-9fc2-72dff2cef7e6",
+      "name": "03 — Standardize Review Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bb9ad92c-b77b-4fa4-944e-51589dfbfa14",
+              "leftValue": "={{ String($json.processing_status || '').trim().toUpperCase() }}",
+              "rightValue": "NEW",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "bd7d8365-950c-47c2-8af9-63a2fbae3b35",
+              "leftValue": "={{ String($json.review_id || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "75d6ba7f-da80-4af2-b540-3eff6e4c0342",
+              "leftValue": "={{ String($json[' asin'] || $json.asin || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "1d5e6d05-62ea-47d3-83fe-737fac9bf7ee",
+              "leftValue": "={{ Number($json.rating) }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "61d04084-426b-4fc7-a4fa-aca26f8aa6bf",
+              "leftValue": "={{ Number($json.rating) }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -208
+      ],
+      "id": "099b35c6-340a-4d27-bf23-8966261db209",
+      "name": "04 — Keep Valid New Reviews",
+      "notesInFlow": true,
+      "notes": "Requires ID, ASIN, review text, rating 1–5 and NEW status"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        288,
+        -208
+      ],
+      "id": "a0b3670c-da8e-4c94-8133-576beeae7e1e",
+      "name": "05 — Process Reviews One at a Time",
+      "notesInFlow": true,
+      "notes": "Batch size: 1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Voice of Customer analyst for an Amazon e-commerce brand.\n\nAnalyze the customer review provided below.\n\nREVIEW INFORMATION\n\nReview ID: {{ $json.review_id }}\nASIN: {{ $json.asin }}\nProduct: {{ $json.product_name }}\nRating: {{ $json.rating }} out of 5\nReview title: {{ $json.review_title }}\nReview text: {{ $json.review_text }}\nVerified purchase: {{ $json.verified_purchase }}\nHelpful votes: {{ $json.helpful_votes }}\n\nANALYSIS INSTRUCTIONS\n\n1. Determine the overall sentiment.\n2. Assign a sentiment score from -1 to 1.\n3. Identify one primary review theme.\n4. Explain the customer's main issue.\n5. Identify any positive signal in the review.\n6. Identify the improvement requested or implied by the customer.\n7. Assign the severity.\n8. Identify the business team responsible for the issue.\n9. Determine whether the review presents an Amazon listing-content opportunity.\n10. Determine whether the review presents an advertising-creative opportunity.\n11. Recommend one practical business action.\n12. Give a confidence score from 0 to 1.\n\nUse only the information contained in the customer review.\n\nDo not invent product information or customer motivations.\n\nAllowed sentiment values:\npositive\nneutral\nmixed\nnegative\n\nAllowed severity values:\nlow\nmedium\nhigh\ncritical\n\nAllowed responsible_team values:\nproduct\npackaging\noperations\ncustomer_support\nlisting_content\nmarketing\nfulfillment\nnone\n\nPrimary themes should use short reusable names such as:\nproduct_effectiveness\npackaging\ncapsule_size\ndosage_information\nlisting_confusion\ndelivery_damage\nvalue_for_money\ncustomer_service\ningredients\ntaste\nease_of_use\nfeature_request\ngeneral_satisfaction\n\nIf no customer issue exists, return \"none\".\n\nIf no positive signal exists, return \"none\".\n\nIf no desired improvement exists, return \"none\".",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        512,
+        -208
+      ],
+      "id": "ce67dffb-095e-4a2b-995d-cb538185c501",
+      "name": "06 — Analyze Customer Review",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Structured Voice of Customer classification"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-5.6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        32
+      ],
+      "id": "8bd43159-468f-47f1-b893-7138c989c22f",
+      "name": "AI Model — Review Analysis"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -208
+      ],
+      "id": "cbf0081b-c2b2-4908-9f30-3ce0e20c7c42",
+      "name": "01 — Start Test Manually"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Review_Input"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -384,
+        -208
+      ],
+      "id": "2c36f9c3-82e8-4036-a80d-3505bb9b5ef0",
+      "name": "02 — Load New Reviews",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Reads records where processing_status = NEW"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"review_id\": \"REV-001\",\n  \"sentiment\": \"positive\",\n  \"sentiment_score\": 0.9,\n  \"primary_theme\": \"product_effectiveness\",\n  \"customer_issue\": \"none\",\n  \"positive_signal\": \"The customer experienced improved energy.\",\n  \"desired_improvement\": \"none\",\n  \"severity\": \"low\",\n  \"responsible_team\": \"none\",\n  \"listing_opportunity\": false,\n  \"creative_opportunity\": true,\n  \"recommended_action\": \"Use improved energy as a potential creative message after validating it against the wider review dataset.\",\n  \"confidence\": 0.95\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        32
+      ],
+      "id": "6cabceb5-2eef-4948-b3b2-eb5cc277d1c6",
+      "name": "AI Output — Enforce Review Schema"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa770146-9390-43cf-9a17-ae04d5c6818b",
+              "name": "review_id",
+              "value": "={{ $json.output.review_id }}",
+              "type": "string"
+            },
+            {
+              "id": "937435f5-a55c-4895-85c6-fb1f1818d217",
+              "name": " asin",
+              "value": "={{ $('02 — Load New Reviews').item.json[' asin'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b5018537-085b-4f96-b3a5-b4a309be3aa1",
+              "name": "product_name",
+              "value": "={{ $('02 — Load New Reviews').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "bbb9929e-1090-4b78-b30c-d79582f9b47c",
+              "name": "rating",
+              "value": "={{ $('02 — Load New Reviews').item.json.rating }}",
+              "type": "number"
+            },
+            {
+              "id": "49c73b4b-cfd3-4d9c-9007-98803c0bd164",
+              "name": "review_text",
+              "value": "={{ $('02 — Load New Reviews').item.json.review_text }}",
+              "type": "string"
+            },
+            {
+              "id": "0309fcbb-4114-454b-bf78-5727e34e4608",
+              "name": "sentiment",
+              "value": "={{ $json.output.sentiment }}",
+              "type": "string"
+            },
+            {
+              "id": "ee6a70ed-9d25-4a3b-b681-044a9d0aac44",
+              "name": "sentiment_score",
+              "value": "={{ $json.output.sentiment_score }}",
+              "type": "number"
+            },
+            {
+              "id": "2d6456e2-8b7e-4c03-8210-238809036a0f",
+              "name": "primary_theme",
+              "value": "={{ $json.output.primary_theme }}",
+              "type": "string"
+            },
+            {
+              "id": "fadb90eb-c27b-48b6-a403-5ea877789d3b",
+              "name": "customer_issue",
+              "value": "={{ $json.output.customer_issue }}",
+              "type": "string"
+            },
+            {
+              "id": "a64e54c7-8abe-427a-882a-ddcc58e12b3f",
+              "name": "positive_signal",
+              "value": "={{ $json.output.positive_signal }}",
+              "type": "string"
+            },
+            {
+              "id": "33fa1593-9b9d-4338-b190-73ff057b98b7",
+              "name": "desired_improvement",
+              "value": "={{ $json.output.desired_improvement }}",
+              "type": "string"
+            },
+            {
+              "id": "d22abcbf-fe99-4a79-8f9c-a807cd8b7cb4",
+              "name": "severity",
+              "value": "={{ $json.output.severity }}",
+              "type": "string"
+            },
+            {
+              "id": "751bd594-8a98-4ee8-b344-feb2e4b46e72",
+              "name": "responsible_team",
+              "value": "={{ $json.output.responsible_team }}",
+              "type": "string"
+            },
+            {
+              "id": "5670ec03-bae8-4ce5-8630-a509365248ec",
+              "name": "listing_opportunity",
+              "value": "={{ $json.output.listing_opportunity }}",
+              "type": "boolean"
+            },
+            {
+              "id": "7a3bda08-4ab0-45f5-8ffd-593bba8db6fd",
+              "name": "creative_opportunity",
+              "value": "={{ $json.output.creative_opportunity }}",
+              "type": "boolean"
+            },
+            {
+              "id": "7b78fa3b-9f7b-47cc-9126-6260453b21d4",
+              "name": "recommended_action",
+              "value": "={{ $json.output.recommended_action }}",
+              "type": "string"
+            },
+            {
+              "id": "f0bc1639-db86-48cb-be0c-4333d3e45c39",
+              "name": "confidence",
+              "value": "={{ $json.output.confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "45756e05-daf6-46f7-9b7b-a72bb23839e0",
+              "name": "analyzed_at",
+              "value": "={{ $now.toFormat('dd/MM/yyyy') }}",
+              "type": "string"
+            },
+            {
+              "id": "db8dbfcb-03b3-43bb-8d31-49996bf34225",
+              "name": "helpful_votes",
+              "value": "={{ $('02 — Load New Reviews').item.json.helpful_votes }}",
+              "type": "number"
+            },
+            {
+              "id": "805d601b-a03f-4eaa-a2e1-f420704259f8",
+              "name": "review_title",
+              "value": "={{ $(\"05 — Process Reviews One at a Time\").item.json.review_title }}",
+              "type": "string"
+            },
+            {
+              "id": "f0de811c-84d9-45ac-b56b-4e4035bd0e25",
+              "name": "review_date",
+              "value": "={{ $(\"05 — Process Reviews One at a Time\").item.json.review_date }}",
+              "type": "string"
+            },
+            {
+              "id": "44f7106a-75de-492a-8574-11ae38fd8269",
+              "name": "verified_purchase",
+              "value": "={{ $(\"05 — Process Reviews One at a Time\").item.json.verified_purchase }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -208
+      ],
+      "id": "85c187ed-b669-4cee-b13f-00992917ea05",
+      "name": "07 — Prepare Analysis Record"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map((item) => {\n  const review = item.json;\n\n  const rating = Number(review.rating || 0);\n  const helpfulVotes = Number(review.helpful_votes || 0);\n  const confidence = Number(review.confidence || 0);\n\n  const severityScores = {\n    low: 5,\n    medium: 15,\n    high: 25,\n    critical: 35,\n  };\n\n  const ratingScores = {\n    1: 40,\n    2: 30,\n    3: 20,\n    4: 5,\n    5: 0,\n  };\n\n  const severityScore =\n    severityScores[String(review.severity).toLowerCase()] || 0;\n\n  const ratingScore = ratingScores[rating] || 0;\n\n  const helpfulVoteScore = Math.min(helpfulVotes * 2, 15);\n\n  const confidenceScore = Math.min(\n    Math.max(confidence * 10, 0),\n    10\n  );\n\n  const priorityScore = Math.min(\n    Math.round(\n      severityScore +\n      ratingScore +\n      helpfulVoteScore +\n      confidenceScore\n    ),\n    100\n  );\n\n  let priorityLevel = \"LOW\";\n\n  if (priorityScore >= 80) {\n    priorityLevel = \"CRITICAL\";\n  } else if (priorityScore >= 60) {\n    priorityLevel = \"HIGH\";\n  } else if (priorityScore >= 40) {\n    priorityLevel = \"MEDIUM\";\n  }\n\n  const requiresAlert =\n    priorityLevel === \"CRITICAL\" ||\n    priorityLevel === \"HIGH\";\n\n  return {\n    json: {\n      ...review,\n      priority_score: priorityScore,\n      priority_level: priorityLevel,\n      requires_alert: requiresAlert,\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        -208
+      ],
+      "id": "8719b4fe-b13a-4b10-be39-47204cb35795",
+      "name": "08 — Calculate Priority Score",
+      "notesInFlow": true,
+      "notes": "Rule-based urgency score: 0–100"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 761623194,
+          "mode": "list",
+          "cachedResultName": "Review_Analysis"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "review_id": "={{ $('02 — Load New Reviews').item.json.review_id }}",
+            "asin": "={{ $('02 — Load New Reviews').item.json[' asin'] }}",
+            "product_name": "={{ $('02 — Load New Reviews').item.json.product_name }}",
+            "rating": "={{ $('02 — Load New Reviews').item.json.rating }}",
+            "helpful_votes": "={{ $('02 — Load New Reviews').item.json.helpful_votes }}",
+            "review_text": "={{ $('02 — Load New Reviews').item.json.review_text }}",
+            "sentiment": "={{ $json.sentiment }}",
+            "sentiment_score": "={{ $json.sentiment_score }}",
+            "primary_theme": "={{ $json.primary_theme }}",
+            "customer_issue": "={{ $json.customer_issue }}",
+            "positive_signal": "={{ $json.positive_signal }}",
+            "desired_improvement": "={{ $json.desired_improvement }}",
+            "severity": "={{ $json.severity }}",
+            "responsible_team": "={{ $json.responsible_team }}",
+            "listing_opportunity": "={{ $json.listing_opportunity }}",
+            "creative_opportunity": "={{ $json.creative_opportunity }}",
+            "recommended_action": "={{ $json.recommended_action }}",
+            "confidence": "={{ $json.confidence }}",
+            "analyzed_at": "={{ $json.analyzed_at }}",
+            "priority_score": "={{ $json.priority_score }}",
+            "priority_level": "={{ $json.priority_level }}",
+            "requires_alert": "={{ $json.requires_alert }}",
+            "review_title": "={{ $('07 — Prepare Analysis Record').item.json.review_title }}",
+            "review_date": "={{ $('07 — Prepare Analysis Record').item.json.review_date }}",
+            "verified_purchase": "={{ $('07 — Prepare Analysis Record').item.json.verified_purchase }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "review_id"
+          ],
+          "schema": [
+            {
+              "id": "review_id",
+              "displayName": "review_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "helpful_votes",
+              "displayName": "helpful_votes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_text",
+              "displayName": "review_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment_score",
+              "displayName": "sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "primary_theme",
+              "displayName": "primary_theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_issue",
+              "displayName": "customer_issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "positive_signal",
+              "displayName": "positive_signal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "desired_improvement",
+              "displayName": "desired_improvement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsible_team",
+              "displayName": "responsible_team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "listing_opportunity",
+              "displayName": "listing_opportunity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creative_opportunity",
+              "displayName": "creative_opportunity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommended_action",
+              "displayName": "recommended_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "analyzed_at",
+              "displayName": "analyzed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority_score",
+              "displayName": "priority_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority_level",
+              "displayName": "priority_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requires_alert",
+              "displayName": "requires_alert",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_title",
+              "displayName": "review_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review_date",
+              "displayName": "review_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "verified_purchase",
+              "displayName": "verified_purchase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1312,
+        -208
+      ],
+      "id": "e02d3a33-54ad-4f17-a84f-506f5b8f604f",
+      "name": "09— Save Review Analysis",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Upsert using review_id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0f2881d7-9ae6-43f2-a880-a738d05cc3c0",
+              "leftValue": "={{ $(\"08 — Calculate Priority Score\").item.json.requires_alert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1536,
+        -208
+      ],
+      "id": "f16a694f-bc11-4b09-99b7-8ce3e7fff4df",
+      "name": "10 — Is Priority Alert Required?",
+      "notesInFlow": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notes": "True for High and Critical priority"
+    },
+    {
+      "parameters": {
+        "sendTo": "alerts@example.com",
+        "subject": "=🚨 {{ $(\"08 — Calculate Priority Score\").item.json.priority_level }} Amazon Review Alert — {{ $(\"08 — Calculate Priority Score\").item.json.product_name }}",
+        "emailType": "text",
+        "message": "=AMAZON REVIEW INTELLIGENCE ALERT\n\nA high-priority customer review has been detected.\n\nPRODUCT DETAILS\nProduct: {{ $(\"08 — Calculate Priority Score\").item.json.product_name }}\nASIN: {{ $(\"08 — Calculate Priority Score\").item.json.asin }}\nReview ID: {{ $(\"08 — Calculate Priority Score\").item.json.review_id }}\nCustomer Rating: {{ $(\"08 — Calculate Priority Score\").item.json.rating }} out of 5\n\nPRIORITY ASSESSMENT\nPriority Level: {{ $(\"08 — Calculate Priority Score\").item.json.priority_level }}\nPriority Score: {{ $(\"08 — Calculate Priority Score\").item.json.priority_score }} out of 100\nSeverity: {{ $(\"08 — Calculate Priority Score\").item.json.severity }}\nAI Confidence: {{ $(\"08 — Calculate Priority Score\").item.json.confidence }}\n\nCUSTOMER FEEDBACK\n{{ $(\"08 — Calculate Priority Score\").item.json.review_text }}\n\nDETECTED ISSUE\nTheme: {{ $(\"08 — Calculate Priority Score\").item.json.primary_theme }}\nCustomer Issue: {{ $(\"08 — Calculate Priority Score\").item.json.customer_issue }}\nDesired Improvement: {{ $(\"08 — Calculate Priority Score\").item.json.desired_improvement }}\n\nRESPONSIBLE TEAM\n{{ $(\"08 — Calculate Priority Score\").item.json.responsible_team }}\n\nRECOMMENDED ACTION\n{{ $(\"08 — Calculate Priority Score\").item.json.recommended_action }}\n\nThis alert was automatically generated by the Amazon Review Intelligence System.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        -384
+      ],
+      "id": "f0fad3fd-28ff-4ac4-8fe0-af284dc0b545",
+      "name": "11 — Send Priority Review Alert",
+      "webhookId": "196281e8-39a9-451f-b75b-139996dad76f",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Review_Input"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "review_id": "={{ $(\"05 — Process Reviews One at a Time\").item.json.review_id }}",
+            " asin": "={{ $json.asin }}",
+            "product_name": "={{ $json.product_name }}",
+            "rating": "={{ $json.rating }}",
+            "review_text": "={{ $json.review_text }}",
+            "review_title": "={{ $json.review_title }}",
+            "review_date": "={{ $json.review_date }}",
+            "verified_purchase": "={{ $json.verified_purchase }}",
+            "helpful_votes": "={{ $json.helpful_votes }}",
+            "processing_status": "=ANALYZED"
+          },
+          "matchingColumns": [
+            "review_id"
+          ],
+          "schema": [
+            {
+              "id": "review_id",
+              "displayName": "review_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": " asin",
+              "displayName": " asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_title",
+              "displayName": "review_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_text",
+              "displayName": "review_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_date",
+              "displayName": "review_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verified_purchase",
+              "displayName": "verified_purchase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "helpful_votes",
+              "displayName": "helpful_votes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_status",
+              "displayName": "processing_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1984,
+        -128
+      ],
+      "id": "f57033db-36fd-4dba-adc2-42525a71d5cf",
+      "name": "12 — Mark Review as Analyzed",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "notesInFlow": true,
+      "notes": "Prevents repeat processing"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 761623194,
+          "mode": "list",
+          "cachedResultName": "Review_Analysis"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        -496
+      ],
+      "id": "10e20292-37f8-48a2-9f87-59c546e02b9a",
+      "name": "13 — Load All Analysis Results",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const reviews = $input\n  .all()\n  .map((item) => item.json)\n  .filter((review) => review.review_id);\n\nconst totalReviews = reviews.length;\n\nfunction normalizeText(value) {\n  return String(value || \"\").trim().toLowerCase();\n}\n\nfunction toNumber(value) {\n  const number = Number(value);\n  return Number.isFinite(number) ? number : 0;\n}\n\nfunction isTrue(value) {\n  return value === true || normalizeText(value) === \"true\";\n}\n\nfunction countByValue(fieldName, expectedValue) {\n  return reviews.filter(\n    (review) =>\n      normalizeText(review[fieldName]) ===\n      normalizeText(expectedValue)\n  ).length;\n}\n\nfunction calculateAverage(fieldName) {\n  if (totalReviews === 0) {\n    return 0;\n  }\n\n  const total = reviews.reduce(\n    (sum, review) => sum + toNumber(review[fieldName]),\n    0\n  );\n\n  return Number((total / totalReviews).toFixed(2));\n}\n\nconst themeCounts = {};\n\nfor (const review of reviews) {\n  const theme = normalizeText(review.primary_theme);\n\n  if (!theme) {\n    continue;\n  }\n\n  themeCounts[theme] = (themeCounts[theme] || 0) + 1;\n}\n\nlet topTheme = \"none\";\nlet highestThemeCount = 0;\n\nfor (const [theme, count] of Object.entries(themeCounts)) {\n  if (count > highestThemeCount) {\n    topTheme = theme;\n    highestThemeCount = count;\n  }\n}\n\nconst summary = {\n  summary_generated_at: new Date().toISOString(),\n  total_reviews: totalReviews,\n  positive_reviews: countByValue(\"sentiment\", \"positive\"),\n  negative_reviews: countByValue(\"sentiment\", \"negative\"),\n  mixed_reviews: countByValue(\"sentiment\", \"mixed\"),\n  neutral_reviews: countByValue(\"sentiment\", \"neutral\"),\n  high_priority_reviews: countByValue(\n    \"priority_level\",\n    \"high\"\n  ),\n  critical_reviews: countByValue(\n    \"priority_level\",\n    \"critical\"\n  ),\n  alerts_required: reviews.filter(\n    (review) => isTrue(review.requires_alert)\n  ).length,\n  average_rating: calculateAverage(\"rating\"),\n  average_sentiment_score:\n    calculateAverage(\"sentiment_score\"),\n  average_priority_score:\n    calculateAverage(\"priority_score\"),\n  top_theme: topTheme,\n};\n\nreturn [\n  {\n    json: summary,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -496
+      ],
+      "id": "a35a0279-1f14-4630-898b-41fb679070f7",
+      "name": "14 — Build Intelligence Summary"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1729515411,
+          "mode": "list",
+          "cachedResultName": "System_Summary"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "summary_generated_at": "={{ $json.summary_generated_at }}",
+            "total_reviews": "={{ $json.total_reviews }}",
+            "positive_reviews": "={{ $json.positive_reviews }}",
+            "negative_reviews": "={{ $json.negative_reviews }}",
+            "mixed_reviews": "={{ $json.mixed_reviews }}",
+            "neutral_reviews": "={{ $json.neutral_reviews }}",
+            "high_priority_reviews": "={{ $json.high_priority_reviews }}",
+            "critical_reviews": "={{ $json.critical_reviews }}",
+            "alerts_required": "={{ $json.alerts_required }}",
+            "average_rating": "={{ $json.average_rating }}",
+            "average_sentiment_score": "={{ $json.average_sentiment_score }}",
+            "average_priority_score": "={{ $json.average_priority_score }}",
+            "top_theme": "={{ $json.top_theme }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "summary_generated_at",
+              "displayName": "summary_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_reviews",
+              "displayName": "total_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "positive_reviews",
+              "displayName": "positive_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "negative_reviews",
+              "displayName": "negative_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mixed_reviews",
+              "displayName": "mixed_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "neutral_reviews",
+              "displayName": "neutral_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "high_priority_reviews",
+              "displayName": "high_priority_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "critical_reviews",
+              "displayName": "critical_reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "alerts_required",
+              "displayName": "alerts_required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "average_rating",
+              "displayName": "average_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "average_sentiment_score",
+              "displayName": "average_sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "average_priority_score",
+              "displayName": "average_priority_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "top_theme",
+              "displayName": "top_theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        -496
+      ],
+      "id": "d80dfd99-c488-4d89-9700-a94d8060f953",
+      "name": "15--Save System Summary"
+    },
+    {
+      "parameters": {
+        "content": "## 1. REVIEW INGESTION\n\nLoads customer-review records from the demonstration data source.\nOnly records with a NEW processing status enter the analysis pipeline.",
+        "width": 320,
+        "color": "#8CB5D4"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -384
+      ],
+      "id": "600d2a1b-a1ea-4b77-8fc2-127db58a8f3b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 2. DATA QUALITY & VALIDATION\n\nStandardizes ratings, helpful votes, boolean values and text fields.\nInvalid or incomplete review records are prevented from reaching the AI layer.\n",
+        "width": 320,
+        "color": "#8CB5D4"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -384
+      ],
+      "id": "949c3858-1e8c-47ab-8629-dd1115c3638c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 3. CONTROLLED PROCESSING\n\nProcesses reviews one at a time to maintain correct item pairing,\nreduce rate-limit risk and prevent review data from becoming mixed.",
+        "width": 320,
+        "color": "#E1DBDB"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -384
+      ],
+      "id": "5113ea1c-b9b4-4810-8606-0322f85cf5c5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 4. AI VOICE-OF-CUSTOMER ANALYSIS\n\nClassifies sentiment, themes, customer issues, positive signals,\ndesired improvements and business opportunities.\n\nA structured-output schema keeps every AI response consistent.",
+        "width": 320,
+        "color": "#E89696"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -352
+      ],
+      "id": "487a9802-8b19-434f-b62e-702a62709966",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 5. TRANSPARENT PRIORITY ENGINE\n\nCalculates an auditable 0–100 urgency score using rating,\nseverity, helpful votes and AI confidence.\n\nPriority levels: Low, Medium, High and Critical.",
+        "width": 320,
+        "color": "#CAD897"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        144
+      ],
+      "id": "57277d3c-fcb0-48ea-952d-3ca5ab8a905c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 6. STORAGE, ALERTING & STATUS CONTROL\n\nUpserts structured analysis using review_id as the unique key.\nHigh-risk reviews generate an immediate alert.\nSuccessfully completed reviews are marked ANALYZED.",
+        "width": 320,
+        "color": "#BA3636"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        144
+      ],
+      "id": "2ec82a86-d502-4363-a6e6-8c6862c0c93f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## 7. INTELLIGENCE SUMMARY\n\nAfter all new reviews are processed, the system aggregates sentiment,\npriority levels, ratings, alerts and customer themes into a summary record.",
+        "width": 320,
+        "color": "#ADE1DE"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -672
+      ],
+      "id": "cc9bca50-3b44-4e4d-99b8-22b3095824b0",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "03 — Standardize Review Data": {
+      "main": [
+        [
+          {
+            "node": "04 — Keep Valid New Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 — Keep Valid New Reviews": {
+      "main": [
+        [
+          {
+            "node": "05 — Process Reviews One at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "05 — Process Reviews One at a Time": {
+      "main": [
+        [
+          {
+            "node": "13 — Load All Analysis Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "06 — Analyze Customer Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 — Analyze Customer Review": {
+      "main": [
+        [
+          {
+            "node": "07 — Prepare Analysis Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Model — Review Analysis": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "06 — Analyze Customer Review",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "01 — Start Test Manually": {
+      "main": [
+        [
+          {
+            "node": "02 — Load New Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 — Load New Reviews": {
+      "main": [
+        [
+          {
+            "node": "03 — Standardize Review Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output — Enforce Review Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "06 — Analyze Customer Review",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "07 — Prepare Analysis Record": {
+      "main": [
+        [
+          {
+            "node": "08 — Calculate Priority Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "09— Save Review Analysis": {
+      "main": [
+        [
+          {
+            "node": "10 — Is Priority Alert Required?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "08 — Calculate Priority Score": {
+      "main": [
+        [
+          {
+            "node": "09— Save Review Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 — Is Priority Alert Required?": {
+      "main": [
+        [
+          {
+            "node": "11 — Send Priority Review Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "12 — Mark Review as Analyzed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "12 — Mark Review as Analyzed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12 — Mark Review as Analyzed": {
+      "main": [
+        [
+          {
+            "node": "05 — Process Reviews One at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "13 — Load All Analysis Results": {
+      "main": [
+        [
+          {
+            "node": "14 — Build Intelligence Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "14 — Build Intelligence Summary": {
+      "main": [
+        [
+          {
+            "node": "15--Save System Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11 — Send Priority Review Alert": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "tags": []
+}
