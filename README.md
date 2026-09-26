@@ -23,6 +23,15 @@ This system automates the review-to-action process.
 - Marks processed reviews as `ANALYZED`
 - Produces aggregate intelligence for a Looker Studio dashboard
 
+## Two-workflow architecture
+
+| Workflow | Purpose | Output |
+| --- | --- | --- |
+| **ARI-01 — Review Analysis** | Validates and analyzes every new review, calculates urgency, stores structured intelligence, and sends priority alerts. | Review-level intelligence and operational alerts |
+| **ARI-02 — Weekly Executive Report** | Aggregates analyzed reviews, calculates weekly metrics, uses AI to write an evidence-based management report, saves it, and emails stakeholders. | Weekly executive summary and recommended actions |
+
+The second workflow uses the structured `Review_Analysis` data produced by the first workflow. This separation keeps real-time review processing reliable while allowing management reporting to run on its own schedule.
+
 ## Workflow
 
 ```mermaid
@@ -86,7 +95,8 @@ The Looker Studio report contains four decision-focused pages:
 .
 ├── README.md
 ├── workflow/
-│   └── amazon-review-intelligence-workflow.json
+│   ├── amazon-review-intelligence-workflow.json
+│   └── 02-weekly-executive-report-workflow.json
 ├── sample-data/
 │   └── sample-review.json
 ├── docs/
@@ -97,13 +107,14 @@ The Looker Studio report contains four decision-focused pages:
 
 ## Quick start
 
-1. Download the workflow JSON from the `workflow` folder.
-2. Import it into n8n.
-3. Replace `YOUR_GOOGLE_SHEET_ID` with your own sheet ID.
+1. Download both workflow JSON files from the `workflow` folder.
+2. Import both files into n8n.
+3. Replace `YOUR_GOOGLE_SHEET_ID` with your own sheet ID in both workflows.
 4. Replace `alerts@example.com` with your alert recipient.
 5. Reconnect Google Sheets, Gmail, and OpenAI credentials.
-6. Create the required sheet tabs and columns using the setup guide.
-7. Test with one review whose `processing_status` is `NEW`.
+6. Create the required sheet tabs and columns using the setup guide, including `Review_Analysis` and `Weekly_Reports`.
+7. Test ARI-01 with one review whose `processing_status` is `NEW`.
+8. After analysis data exists, test ARI-02 manually and confirm that it saves and emails the weekly report.
 
 See [docs/setup-guide.md](docs/setup-guide.md) for the complete configuration.
 
