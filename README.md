@@ -118,5 +118,5 @@ This project demonstrates AI workflow design, data validation, prompt engineerin
 
 ## Author
 
-**Qurat ul Ain**  
-Senior Visual Designer transitioning into AI automation and product-focused roles.
+**Maha**  
+ AI automation and product-focused roles.
