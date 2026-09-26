@@ -56,6 +56,10 @@ Each review can produce:
 - Confidence score
 - Priority score and alert decision
 
+## Workflow overview
+
+![Amazon Review Intelligence n8n workflow](assets/n8n-workflow-overview.png)
+
 ## Dashboard
 
 The Looker Studio report contains four decision-focused pages:
