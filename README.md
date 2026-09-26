@@ -32,6 +32,10 @@ This system automates the review-to-action process.
 
 The second workflow uses the structured `Review_Analysis` data produced by the first workflow. This separation keeps real-time review processing reliable while allowing management reporting to run on its own schedule.
 
+### ARI-02 workflow overview
+
+![ARI-02 Weekly Amazon Review Intelligence Report workflow](assets/weekly-executive-report-workflow.png)
+
 ## Workflow
 
 ```mermaid
