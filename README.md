@@ -2,7 +2,7 @@
 
 An AI-powered review operations workflow built with **n8n, OpenAI, Google Sheets, Gmail, and Looker Studio**. It converts raw Amazon-style customer reviews into structured insights, priority alerts, recommended actions, and decision-ready dashboards.
 
-> Portfolio project by **Qurat ul Ain**. All reviews and product data used in this demonstration are synthetic.
+> Portfolio project by **Maha**. All reviews and product data used in this demonstration are synthetic.
 
 ## Business problem
 
@@ -178,6 +178,6 @@ This project demonstrates AI workflow design, data validation, prompt engineerin
 
 ## Author
 
-** Maha **  
-AI workflow automation and product focused roles
 
+**Maha**  
+AI automation and product focused roles
