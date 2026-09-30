@@ -178,6 +178,6 @@ This project demonstrates AI workflow design, data validation, prompt engineerin
 
 ## Author
 
-**Qurat ul Ain**  
-Visual design, e-commerce creative strategy, and AI workflow automation.
+** Maha **  
+AI workflow automation and product focused roles
 
