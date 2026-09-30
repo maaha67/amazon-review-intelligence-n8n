@@ -1,0 +1,101 @@
+{
+  "name": "ARI-07 | Brief Status Lookup",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const row = $json;\nconst requestedId = $('Brief ID input').first().json.brief_id;\n\nif (!row.brief_id) {\n  return {\n    json: {\n      found: false,\n      brief_id: requestedId,\n      message: `No brief found with ID ${requestedId}.`\n    }\n  };\n}\n\nreturn {\n  json: {\n    found: true,\n    brief_id: row.brief_id,\n    asin: row.asin,\n    status: row.status,\n    created_at: row.created_at,\n    reviewer_notes: row.reviewer_notes || \"\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "58fc95a9-2b59-429c-abd5-340a949b54cd",
+      "name": "Return Brief Status"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Brief_Drafts",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "brief_id",
+              "lookupValue": "={{ $json.brief_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "77e31f73-b263-4b8d-82b2-2e42a21261ed",
+      "name": "Find Brief in Sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "brief_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "55cec4a5-e916-4084-9f23-4245f7f27fa1",
+      "name": "Brief ID input"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Find Brief in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Return Brief Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brief ID input": {
+      "main": [
+        [
+          {
+            "node": "Find Brief in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

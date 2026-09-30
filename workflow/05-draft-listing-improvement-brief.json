@@ -1,0 +1,473 @@
+{
+  "name": "ARI-05 | Draft Listing Improvement Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "asin"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -176
+      ],
+      "id": "03f48e39-3457-48c2-abe0-a3ccb828ae71",
+      "name": "Brief Input"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ARI_03_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "asin": "={{ $(\"Brief Input\").first().json.asin }}"
+          },
+          "matchingColumns": [
+            "asin"
+          ],
+          "schema": [
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        -176
+      ],
+      "id": "7b68dbde-1e84-4632-badf-eeddd0fcdfcb",
+      "name": "Call 'ARI-03 | Review Lookup Tool'"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a concise Amazon listing improvement brief using ONLY this review data:\n\nASIN: {{ $json.asin }}\nNumber of reviews: {{ $json.review_count }}\nReviews: {{ JSON.stringify($json.reviews) }}\n\nIf the number of reviews is zero, respond only:\n\"No matching reviews were found. A brief cannot be created.\"\n\nOtherwise write these sections:\n1. Objective \u2014 what customer confusion or concern the brief addresses.\n2. Evidence \u2014 each finding with its supporting review_id values.\n3. Proposed listing copy changes.\n4. Proposed image or A+ Content changes.\n5. Product or compliance issues requiring human review.\n6. Priority \u2014 explain which change should be addressed first.\n7. Limitations \u2014 state the review count and distinguish repeated issues\n   from comments found in only one review.\n\nDo not invent review IDs, customer quotes, product facts, dosage directions,\nsafety claims, or performance results. Treat proposed copy as a draft for\nhuman review.\nGroup related complaints under a broader theme when appropriate.\nDosage clarity and serving-size clarity may form one information-clarity\ntheme, while retaining the distinct details and review IDs.\n\nDistinguish priority from frequency. A single safety report may warrant\nurgent human investigation, but never describe it as a recurring issue\nunless multiple reviews support it.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        672,
+        -176
+      ],
+      "id": "f6b9aedf-9041-4d60-80d5-53f170c746ce",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-5.6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        48
+      ],
+      "id": "4e812759-25ba-465b-a7bc-1b58c67152b1",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3acaa76-820f-4e2d-8e61-90ce70b58b61",
+              "name": "brief_id",
+              "value": "={{ \"BRIEF-\" + $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "eba0f68b-668d-44da-96fb-cd177d5239cb",
+              "name": "created_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "5f821030-0596-4b76-af25-5ee878e2328c",
+              "name": "=asin",
+              "value": "={{ $(\"Call 'ARI-03 | Review Lookup Tool'\").first().json.asin }}",
+              "type": "string"
+            },
+            {
+              "id": "b38c921b-b5ef-49f0-b1da-7f944611dc40",
+              "name": "review_count",
+              "value": "={{ $(\"Call 'ARI-03 | Review Lookup Tool'\").first().json.review_count }}",
+              "type": "string"
+            },
+            {
+              "id": "17c1b2fa-cafc-4cec-a963-91220cdfabbf",
+              "name": "brief_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "6f00b88a-35e1-4c3b-a23f-66a1f11b2787",
+              "name": "status",
+              "value": "Draft",
+              "type": "string"
+            },
+            {
+              "id": "cd184a90-58c4-471b-af64-c971bef64c37",
+              "name": "reviewer_notes",
+              "value": "Leave empty",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        -176
+      ],
+      "id": "b29af743-c4ce-44db-9df8-609801643597",
+      "name": "Prepare Draft Record"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Brief_Drafts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "brief_id",
+              "displayName": "brief_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_count",
+              "displayName": "review_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "brief_text",
+              "displayName": "brief_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reviewer_notes",
+              "displayName": "reviewer_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        -176
+      ],
+      "id": "c34371fc-a491-4dcc-908f-32dce71d6485",
+      "name": "Save Brief as Draft"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "00fa8829-2351-4f58-8cde-af6264df8e17",
+              "name": "=text",
+              "value": "={{ \"Saved \" + $(\"Prepare Draft Record\").first().json.brief_id + \" with status Draft.\\n\\n\" + $(\"Prepare Draft Record\").first().json.brief_text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1664,
+        -176
+      ],
+      "id": "be7beaf8-8d43-4d54-b228-44ef727c0f04",
+      "name": "Return Saved Brief"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c61bacaa-54ea-4ac1-a8c5-950043d379e1",
+              "leftValue": "={{ Number($json.review_count) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -176
+      ],
+      "id": "0133ae4c-1c6e-41b6-9765-7c39c4543143",
+      "name": "Review Found?"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ARI_06_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "brief_id": "={{ $json.brief_id }}",
+            "asin": "={{ $json.asin }}",
+            "brief_text": "={{ $json.brief_text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "brief_id",
+              "displayName": "brief_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "brief_text",
+              "displayName": "brief_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1456,
+        -176
+      ],
+      "id": "7ae26972-812d-44f1-8f4f-49f403d0ea7a",
+      "name": "Call 'ARI-06 | Brief Approval.'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Brief Input": {
+      "main": [
+        [
+          {
+            "node": "Call 'ARI-03 | Review Lookup Tool'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'ARI-03 | Review Lookup Tool'": {
+      "main": [
+        [
+          {
+            "node": "Review Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Prepare Draft Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Draft Record": {
+      "main": [
+        [
+          {
+            "node": "Save Brief as Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Brief as Draft": {
+      "main": [
+        [
+          {
+            "node": "Call 'ARI-06 | Brief Approval.'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Found?": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'ARI-06 | Brief Approval.'": {
+      "main": [
+        [
+          {
+            "node": "Return Saved Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

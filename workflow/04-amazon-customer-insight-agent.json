@@ -1,0 +1,240 @@
+{
+  "name": "ARI-04 | Amazon Customer Insight Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "840a33b0-160e-4515-84dc-34be0d9b8de4",
+      "name": "Ask About a Product"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an Amazon Customer Insight Agent for an e-commerce team.\n\nWhen the user asks about a product:\n1. Identify the ASIN in the user's question.\n2. Call the Review Lookup Tool with that ASIN before answering.\n3. Use only the reviews returned by that tool.\n4. Group related issues, but do not claim that a theme is common\n   unless multiple returned reviews support it.\n5. Include real review_id values beside your findings.\n6. Recommend practical changes to product images, listing copy,\n   A+ Content, or the product itself based on the evidence.\n7. Separate changes the creative/listing team can make from issues\n   the product team must investigate.\n8. Do not invent review IDs, review counts, customer quotes,\n   performance results, or product facts.\n9. If the user did not provide an ASIN, ask for one.\n10. If review_count is zero, say no matching reviews were found.\n\nFormat your answer as:\nASIN:\nReviews analyzed:\nTop issues:\nPositive signals:\nListing and creative recommendations:\nProduct-team follow-up:\nEvidence limitations:\n\nWhen the user explicitly requests an improvement brief, call the\nDraft Improvement Brief Tool with their ASIN and present its result.\nFor ordinary analysis questions, use the Review Lookup Tool."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        344,
+        0
+      ],
+      "id": "0c9a4b70-b63b-4575-9240-a04b64d93a93",
+      "name": "Analyze Customer Reviews"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-5.6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "db69ec8c-868e-4ec2-9c2f-ea0ce1d3e88f",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to retrieve analyzed Amazon customer reviews for one ASIN. Pass the exact ASIN from the user's question. The result contains review_count and review records with review IDs.",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ARI_03_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "asin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('asin', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "asin"
+          ],
+          "schema": [
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        224
+      ],
+      "id": "f059cb24-3ac9-4dd3-9b5b-79df3014e0a4",
+      "name": "Review Lookup Tool"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool only when the user explicitly asks for a listing or creative improvement brief for an ASIN. Supply the exact ASIN. The tool retrieves reviews and returns a draft supported by review IDs.",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ARI_05_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "asin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('asin', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "asin"
+          ],
+          "schema": [
+            {
+              "id": "asin",
+              "displayName": "asin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        224
+      ],
+      "id": "afd967ce-378d-4ce3-8d43-68e1702deebe",
+      "name": "Draft Improvement Brief Tool"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool when the user asks for the status of a listing improvement brief. Input a brief ID such as BRIEF-1503. Return the status from Brief_Drafts. Do not guess a status.",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ARI_07_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "brief_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('brief_id', `When asked about a brief's approval status, call Look Up Brief Status using the brief ID. Report the status returned by the tool. If found is false, say that the brief ID was not found. Never infer approval from the contents of a brief.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "brief_id"
+          ],
+          "schema": [
+            {
+              "id": "brief_id",
+              "displayName": "brief_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        224
+      ],
+      "id": "848760b6-9d7e-45ab-ad24-242434f1723a",
+      "name": "Call 'ARI-07 | Brief Status Lookup'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ask About a Product": {
+      "main": [
+        [
+          {
+            "node": "Analyze Customer Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Customer Reviews",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Lookup Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Analyze Customer Reviews",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Improvement Brief Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Analyze Customer Reviews",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'ARI-07 | Brief Status Lookup'": {
+      "ai_tool": [
+        [
+          {
+            "node": "Analyze Customer Reviews",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

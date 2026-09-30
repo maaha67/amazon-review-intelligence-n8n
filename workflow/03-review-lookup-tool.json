@@ -1,0 +1,102 @@
+{
+  "name": "ARI-03 | Review Lookup Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Review_Analysis",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "asin",
+              "lookupValue": "={{ $json.asin || \"\" }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        0
+      ],
+      "id": "f8249d12-244e-4cfc-b255-64c87026d6b9",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const requestedAsin = String(\n  $(\"Review Lookup Input\").first().json.asin ?? \"\"\n).trim();\n\nconst reviews = $input.all()\n  .map(item => item.json)\n  .filter(row => {\n    const rowAsin = String(\n      row.asin ?? row[\" asin\"] ?? \"\"\n    ).trim();\n\n    return rowAsin === requestedAsin && row.review_id;\n  })\n  .map(row => ({\n    review_id: row.review_id,\n    rating: row.rating ?? null,\n    primary_theme: row.primary_theme ?? \"\",\n    customer_issue: row.customer_issue ?? \"\",\n    positive_signal: row.positive_signal ?? \"\",\n    severity: row.severity ?? \"\",\n    listing_opportunity: row.listing_opportunity ?? \"\",\n    creative_opportunity: row.creative_opportunity ?? \"\",\n    recommended_action: row.recommended_action ?? \"\"\n  }));\n\nreturn [{\n  json: {\n    asin: requestedAsin,\n    review_count: reviews.length,\n    reviews\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "930b274a-0666-4a8e-ac87-9ca38d43cfd3",
+      "name": "Package Review Evidence"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "asin"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "62788ac9-2325-4fe2-8861-0d840756a7b6",
+      "name": "Review Lookup Input"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Package Review Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Lookup Input": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
